@@ -1,0 +1,170 @@
+================================================================
+  AI QUESTION GENERATION SYSTEM — COMPLETE SETUP GUIDE
+================================================================
+
+STEP 1 — INSTALL MYSQL
+-----------------------
+Download from: https://dev.mysql.com/downloads/installer/
+Choose: mysql-installer-community (the bigger file)
+During install:
+  - Setup Type: Developer Default
+  - Root Password: set something like root123 (REMEMBER THIS)
+  - Port: 3306 (leave as default)
+
+
+STEP 2 — CREATE THE DATABASE
+------------------------------
+Open "MySQL Command Line Client" from Windows Start menu.
+Type your root password when asked.
+Then run these commands:
+
+  CREATE DATABASE ai_question_db CHARACTER SET utf8mb4;
+  SHOW DATABASES;    (you should see ai_question_db listed)
+  EXIT;
+
+
+STEP 3 — SET UP YOUR .env FILE
+--------------------------------
+Inside the ai_question_system folder, find the file: .env.example
+Copy it and rename the copy to: .env
+
+Open .env in Notepad and fill in YOUR values:
+
+  GEMINI_API_KEY=AIzaSy...      ← your Gemini key
+  DB_HOST=localhost
+  DB_PORT=3306
+  DB_NAME=ai_question_db
+  DB_USER=root
+  DB_PASSWORD=root123           ← the password you set in Step 1
+  EMAIL_ADDRESS=your@gmail.com
+  EMAIL_PASSWORD=your_app_pass
+  PASS_THRESHOLD=60.0
+  APP_BASE_URL=http://localhost:8501
+
+IMPORTANT: The .env file must be inside ai_question_system\ folder.
+
+
+STEP 4 — RUN THE APP
+----------------------
+Option A: Double-click START_APP.bat (easiest)
+
+Option B: Open Command Prompt and type:
+  cd C:\Users\YourName\Downloads\ai_question_system
+  pip install -r requirements.txt
+  streamlit run app.py
+
+The browser opens at: http://localhost:8501
+You should see: "🟢 MySQL Connected — MySQL 8.x.x"
+
+
+================================================================
+  DEFAULT LOGIN ACCOUNTS
+================================================================
+
+Role     | Username  | Password    | What they can do
+---------|-----------|-------------|----------------------
+Admin    | admin     | admin123    | Manage users, see all data
+Trainer  | trainer   | trainer123  | Create questions, exam links
+Student  | student   | student123  | Take exams, view results
+
+
+================================================================
+  WHERE TO FIND USER DATABASE DETAILS
+================================================================
+
+All user data is stored in the MySQL database.
+
+METHOD 1 — View in MySQL Workbench (easiest visual tool)
+  1. Open MySQL Workbench (installed with MySQL)
+  2. Click the Local instance (localhost:3306)
+  3. Enter your root password
+  4. In the left panel, expand: ai_question_db → Tables
+  5. Right-click "users" → Select Rows
+  6. You see ALL users: username, password (hashed), role, email, phone
+
+Tables you can browse:
+  users              → all user accounts
+  question_banks     → all question banks created by trainers
+  questions          → all MCQ questions with options
+  exam_sessions      → every exam attempt by every student
+  exam_answers       → every individual answer submitted
+  star_ratings       → auto-computed star ratings per student
+  queries            → messages between users
+  feedback           → student feedback
+  exam_links         → shareable exam links
+  bank_requests      → student requests for new topics
+
+METHOD 2 — View in MySQL Command Line
+  mysql -u root -p
+  USE ai_question_db;
+  SELECT id, username, role, full_name, email, is_active FROM users;
+  EXIT;
+
+METHOD 3 — Admin Panel in the App
+  Login as admin / admin123
+  Go to "🗄️ Student Database" tab
+  Search by roll number or sort by subject
+  Download as Excel
+
+
+================================================================
+  HOW EXAM LINKS WORK
+================================================================
+
+1. Login as Trainer (trainer / trainer123)
+2. Go to "🔗 Exam Links" tab
+3. Select a question bank → Enter title → Click Generate Link
+4. You get a URL like: http://localhost:8501/?exam_token=abc123
+5. Share this URL with students via WhatsApp/Email
+
+Student opens the URL:
+  → Sees Login OR Request Access
+  → If new: enters Name + Roll Number → submits request
+  → Trainer sees request as "🆕 NEW USER" or "🟡 EXISTING USER"
+  → Trainer approves → student gets username & password
+  → Student logs in → takes exam → result emailed automatically
+
+================================================================
+  HOW STUDENT ACCOUNTS ARE CREATED
+================================================================
+
+Method A — Student signs up at the login page:
+  Click "New Student? Create Account"
+  Enter: Full Name, Email, Phone
+  System creates username (from name) + password (random 8 chars)
+  Credentials emailed to student
+
+Method B — Student requests via exam link:
+  Open exam link → click "Request Access"
+  Enter: Name + Roll Number
+  Trainer approves → Username = name, Password = roll number
+
+Method C — Admin creates manually:
+  Login as admin → "👥 Users" tab → "Create New User"
+  Set any username, password, and role
+
+
+================================================================
+  TROUBLESHOOTING
+================================================================
+
+Error: "No module named database.db_setup"
+  Fix: You are in the wrong folder. Run:
+       cd ai_question_system
+       streamlit run app.py
+
+Error: "Cannot connect to MySQL"
+  Fix: Check your .env file has the right DB_PASSWORD
+       Make sure MySQL service is running (check Windows Services)
+
+Error: "Unknown database ai_question_db"
+  Fix: CREATE DATABASE ai_question_db; in MySQL terminal
+
+Error: "Access denied for root"
+  Fix: Wrong password in .env DB_PASSWORD field
+
+Error: "Gemini API key not found"
+  Fix: Add your key to .env: GEMINI_API_KEY=AIzaSy...
+       Get free key: https://aistudio.google.com/app/apikey
+
+================================================================
